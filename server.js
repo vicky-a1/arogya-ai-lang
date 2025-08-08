@@ -47,11 +47,20 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: [
         "'self'",
+        "'unsafe-inline'",
+        "'unsafe-eval'",
+        "'unsafe-hashes'",
         "https://cdnjs.cloudflare.com",
         "https://unpkg.com",
         "https://cdn.jsdelivr.net"
       ],
-      styleSrc: ["'self'", "https://cdnjs.cloudflare.com"],
+      "script-src-attr": ["'unsafe-inline'", "'unsafe-hashes'"],
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdnjs.cloudflare.com",
+        "https://fonts.googleapis.com"
+      ],
       imgSrc: ["'self'", "data:"],
       connectSrc: [
         "'self'",
@@ -59,7 +68,11 @@ app.use(helmet({
         "https://api.perplexity.ai",
         "https://generativelanguage.googleapis.com"
       ],
-      fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
+      fontSrc: [
+        "'self'",
+        "https://cdnjs.cloudflare.com",
+        "https://fonts.gstatic.com"
+      ],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
       frameSrc: ["'none'"],
