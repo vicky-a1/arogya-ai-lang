@@ -2,8 +2,8 @@ services:
   - type: web
     name: arogya-ai
     env: node
-    buildCommand: npm install --production --no-optional
-    startCommand: npm start
+    buildCommand: npm ci --only=production --no-optional
+    startCommand: node --max-old-space-size=512 server.js
     envVars:
       - key: NODE_ENV
         value: production
@@ -12,4 +12,7 @@ services:
     scaling:
       minInstances: 1
       maxInstances: 1
-      targetMemoryPercent: 80
+      targetMemoryPercent: 70
+      targetCPUPercent: 70
+    healthCheckPath: /api/health
+    autoDeploy: false

@@ -1,16 +1,10 @@
-// Load environment variables based on environment
-if (process.env.NODE_ENV === 'production') {
-  require('dotenv').config({ path: '.env.production' });
-} else {
-  require('dotenv').config();
-}
+require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const compression = require('compression');
-const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -20,10 +14,8 @@ if (process.env.TRUST_PROXY === '1') {
   app.set('trust proxy', 1);
 }
 
-console.log('Initializing Arogya AI server...');
-console.log('Environment:', process.env.NODE_ENV || 'development');
-console.log('PORT from env:', process.env.PORT);
-console.log('Using PORT:', PORT);
+// Server initialization logging
+console.log(`Server initializing in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 
 // Global error handler
 process.on('uncaughtException', (error) => {
@@ -98,25 +90,19 @@ app.use(helmet({
   permittedCrossDomainPolicies: { permittedPolicies: "none" }
 }));
 
-// Enhanced rate limiting with different limits for different endpoints
+// Rate limiting configuration
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: {
-    error: 'Too many requests from this IP, please try again later.',
-    retryAfter: '15 minutes'
-  },
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  message: { error: 'Too many requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 const apiLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 10, // limit each IP to 10 API requests per minute
-  message: {
-    error: 'Too many API requests, please slow down.',
-    retryAfter: '1 minute'
-  },
+  windowMs: 60 * 1000,
+  max: 20,
+  message: { error: 'Too many API requests' },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -145,38 +131,28 @@ app.get('/api/health', (req, res) => {
 // API keys middleware with enhanced security
 app.get('/api/keys', (req, res) => {
   try {
-    // Verify request origin in production
-    if (process.env.NODE_ENV === 'production') {
-      const origin = req.get('origin');
-      if (!origin || !origin.match(/^https?:\/\/(localhost|arogya-ai\.vercel\.app)/)) {
-        return res.status(403).json({ error: 'Unauthorized origin' });
-      }
+    const allowedOrigins = ['localhost', 'arogya-ai.vercel.app', 'render.com'];
+    const origin = req.get('origin') || '';
+    
+    if (!allowedOrigins.some(allowed => origin.includes(allowed))) {
+      return res.status(403).json({ error: 'Unauthorized origin' });
     }
 
-    // Rate limit check (using express-rate-limit middleware)
-    if (req.rateLimit && req.rateLimit.remaining === 0) {
-      return res.status(429).json({ error: 'Too many requests' });
-    }
-
-    // Basic validation and key masking
     const keys = {
-      groq: process.env.GROQ_API_KEY ? process.env.GROQ_API_KEY : '',
-      perplexity: process.env.PERPLEXITY_API_KEY ? process.env.PERPLEXITY_API_KEY : '',
-      gemini: process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY : ''
+      groq: process.env.GROQ_API_KEY || '',
+      perplexity: process.env.PERPLEXITY_API_KEY || '',
+      gemini: process.env.GEMINI_API_KEY || ''
     };
 
-    // Audit logging in production
-    if (process.env.NODE_ENV === 'production') {
-      console.log('API keys requested from:', req.ip, '- Keys present:', {
-        groq: !!keys.groq,
-        perplexity: !!keys.perplexity,
-        gemini: !!keys.gemini
-      });
-    }
+    // Mask keys for logging
+    const keysPresent = Object.entries(keys).reduce((acc, [key, value]) => {
+      acc[key] = !!value;
+      return acc;
+    }, {});
 
+    console.log(`API keys requested from: ${req.ip}`, keysPresent);
     res.json(keys);
   } catch (error) {
-    console.error('Error serving API keys:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

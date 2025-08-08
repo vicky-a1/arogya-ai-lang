@@ -1,33 +1,29 @@
-# Use official Node.js runtime as base image
+# Build stage
 FROM node:18-alpine AS builder
-
-# Set working directory
 WORKDIR /app
-
-# Copy package files
 COPY package*.json .npmrc ./
-
-# Install dependencies with specific NODE_OPTIONS
 ENV NODE_OPTIONS="--max-old-space-size=512"
-RUN npm ci --only=production --no-optional
+RUN npm ci --only=production --no-optional --no-audit
 
-# Copy application code
-COPY . .
-
-# Create production image
+# Production stage
 FROM node:18-alpine
-
 WORKDIR /app
-
-# Copy only necessary files from builder
+ENV NODE_ENV=production
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/server.js ./
-COPY --from=builder /app/public ./public
+COPY package.json ./
+COPY server.js ./
+COPY public ./public
 
-# Create non-root user
+# Security
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S arogya -u 1001 -G nodejs
+    adduser -S arogya -u 1001 -G nodejs && \
+    chown -R arogya:nodejs /app
+USER arogya
+
+# Runtime config
+ENV PORT=3000
+EXPOSE 3000
+CMD ["node", "--max-old-space-size=512", "server.js"]
 
 # Change ownership of the app directory
 RUN chown -R arogya:nodejs /app

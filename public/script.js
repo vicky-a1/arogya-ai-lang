@@ -1,24 +1,24 @@
-// Global Variables
-let currentLanguage = 'english';
-let consultationPhase = 'initial'; // initial, info_collection, symptom_collection, recommendation, pdf_question
-let userInfo = {};
-let conversationHistory = [];
-let collectedSymptoms = {};
-let aiGuidanceResponse = '';
-let isDataCollectionComplete = false;
+// Global state management
+const state = {
+    language: 'english',
+    phase: 'initial',
+    userInfo: {},
+    history: [],
+    symptoms: {},
+    aiResponse: '',
+    isComplete: false
+};
 
 // Production error handling
 window.addEventListener('error', function(e) {
-    // Log errors silently in production
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        console.error('JavaScript Error:', e.error);
+    if (process.env.NODE_ENV === 'development') {
+        console.error('Error:', e.error);
     }
 });
 
 window.addEventListener('unhandledrejection', function(e) {
-    // Handle promise rejections silently in production
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        console.error('Unhandled Promise Rejection:', e.reason);
+    if (process.env.NODE_ENV === 'development') {
+        console.error('Promise Error:', e.reason);
     }
 });
 
@@ -29,24 +29,16 @@ const API_KEYS = {
     GEMINI: ''      // Will be loaded from server
 };
 
-// Multi-Model Configuration (Priority Order)
+// AI Model Configuration
 const AI_MODELS = [
-    {
-        name: 'gpt-4o',
-        provider: 'groq',
-        model: 'llama3-8b-8192', // Using GROQ's best available model
-        priority: 1,
-        description: 'Primary - High empathy, multilingual strength'
-    },
     {
         name: 'mixtral-8x7b',
         provider: 'groq',
         model: 'mixtral-8x7b-32768',
-        priority: 2,
-        description: 'Fast, smart fallback'
+        priority: 1
     },
     {
-        name: 'gemini-1.5-flash',
+        name: 'gemini-pro',
         provider: 'gemini',
         model: 'gemini-pro',
         priority: 3,
