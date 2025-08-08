@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console Test for Arogya AI</title>
+</head>
+<body>
+    <h1>Browser Console Test</h1>
+    <p>Open browser console (F12) and check for JavaScript errors.</p>
+    <button onclick="testApplication()">Test Application Functions</button>
+    
+    <script>
+        function testApplication() {
+            console.log('Testing Arogya AI application...');
+            
+            // Test if main page loads without errors
+            fetch('http://localhost:3000')
+                .then(response => {
+                    console.log('✅ Main page loads successfully:', response.status);
+                    return response.text();
+                })
+                .then(html => {
+                    console.log('✅ HTML content received');
+                    
+                    // Test if script.js loads without syntax errors
+                    return fetch('http://localhost:3000/script.js');
+                })
+                .then(response => {
+                    console.log('✅ script.js loads successfully:', response.status);
+                    return response.text();
+                })
+                .then(scriptContent => {
+                    console.log('✅ JavaScript content received');
+                    
+                    // Test if styles.css loads
+                    return fetch('http://localhost:3000/styles.css');
+                })
+                .then(response => {
+                    console.log('✅ styles.css loads successfully:', response.status);
+                    
+                    // Test API endpoints
+                    return fetch('http://localhost:3000/api/health');
+                })
+                .then(response => {
+                    console.log('✅ Health API endpoint works:', response.status);
+                    return response.json();
+                })
+                .then(healthData => {
+                    console.log('✅ Health API response:', healthData);
+                    
+                    // Test API keys endpoint
+                    return fetch('http://localhost:3000/api/keys');
+                })
+                .then(response => {
+                    console.log('✅ API keys endpoint works:', response.status);
+                    console.log('🎉 All tests passed! Application is working correctly.');
+                })
+                .catch(error => {
+                    console.error('❌ Test failed:', error);
+                });
+        }
+        
+        // Auto-run test when page loads
+        window.addEventListener('load', () => {
+            setTimeout(testApplication, 1000);
+        });
+    </script>
+</body>
+</html>

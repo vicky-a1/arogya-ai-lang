@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Arogya AI - Simple Version</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #2563eb 0%, #059669 100%);
+            color: white;
+            margin: 0;
+            padding: 16px;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+        .chat-container {
+            background: white;
+            color: #333;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 400px;
+        }
+        .user-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        input, select {
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            min-height: 44px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            transition: all 0.2s ease;
+        }
+        input:focus, select:focus {
+            border-color: #2563eb;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            transform: scale(1.02);
+        }
+        button {
+            background: #16a34a;
+            color: white;
+            padding: 18px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            min-height: 48px;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        button:hover, button:active {
+            background: #15803d;
+            transform: translateY(-1px);
+        }
+        .message {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f0f9ff;
+        }
+        .ai-message {
+            background: #dbeafe;
+        }
+        .user-message {
+            background: #dcfce7;
+            text-align: right;
+        }
+        .chat-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .chat-input input {
+            flex: 1;
+        }
+        .chat-input button {
+            width: auto;
+            padding: 12px 20px;
+        }
+        .status {
+            text-align: center;
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .header {
+                padding: 24px 16px;
+            }
+            .chat-container {
+                min-height: 400px;
+            }
+            .chat-input {
+                gap: 12px;
+            }
+            .chat-input input {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+            }
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            .form-grid {
+                gap: 12px;
+            }
+            input, select, button {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Arogya AI</h1>
+            <p>Your Personal Health Co-Pilot</p>
+            <div class="status" id="status">Ready to help you!</div>
+        </div>
+
+        <div class="user-info" id="userInfo">
+            <h3>Tell me about yourself</h3>
+            <div class="form-grid">
+                <input type="text" id="name" placeholder="Your Name" required>
+                <input type="number" id="age" placeholder="Age" min="1" max="120" required>
+                <select id="gender" required>
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+                <input type="text" id="city" placeholder="City" required>
+            </div>
+            <button onclick="startConsultation()">Start Consultation</button>
+        </div>
+
+        <div class="chat-container" id="chatContainer" style="display: none;">
+            <div id="messages">
+                <div class="message ai-message">
+                    <strong>Dr. Arogya:</strong> Hello! I'm ready to help you with your health concerns. What's bothering you today?
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="Describe your symptoms..." onkeypress="handleEnter(event)">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+            <button onclick="generateSimpleReport()" id="reportBtn" style="display: none; margin-top: 20px;">Generate Report</button>
+        </div>
+    </div>
+
+    <script>
+        let userInfo = {};
+        let conversation = [];
+        let questionCount = 0;
+
+        function startConsultation() {
+            const name = document.getElementById('name').value.trim();
+            const age = document.getElementById('age').value;
+            const gender = document.getElementById('gender').value;
+            const city = document.getElementById('city').value.trim();
+
+            if (!name || !age || !gender || !city) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            userInfo = { name, age, gender, city };
+            
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('chatContainer').style.display = 'block';
+            document.getElementById('status').textContent = `Consulting with ${name}...`;
+            
+            addMessage(`Thank you ${name}! Please describe your symptoms in detail.`, 'ai');
+        }
+
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            addMessage(message, 'user');
+            conversation.push({ question: `User response ${questionCount + 1}`, answer: message });
+            input.value = '';
+            questionCount++;
+
+            // Simple AI response simulation
+            setTimeout(() => {
+                let response;
+                if (questionCount === 1) {
+                    response = "I understand. How long have you been experiencing these symptoms?";
+                } else if (questionCount === 2) {
+                    response = "Thank you for the information. On a scale of 1-10, how severe would you rate your symptoms?";
+                } else if (questionCount === 3) {
+                    response = "Based on your symptoms, I recommend rest and staying hydrated. Please consult a doctor if symptoms persist. Would you like me to generate a health report?";
+                    document.getElementById('reportBtn').style.display = 'block';
+                } else {
+                    response = "Thank you for the additional information. I recommend consulting with a healthcare professional for proper diagnosis and treatment.";
+                    document.getElementById('reportBtn').style.display = 'block';
+                }
+                
+                addMessage(response, 'ai');
+            }, 1000);
+        }
+
+        function addMessage(text, sender) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.innerHTML = `<strong>${sender === 'ai' ? 'Dr. Arogya' : userInfo.name}:</strong> ${text}`;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function generateSimpleReport() {
+            // Create PDF report with exact format
+            try {
+                // Simple PDF generation using basic formatting
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                const timeStr = now.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                }) + ' IST';
+                const healthId = `AR-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(Math.floor(Math.random()*1000)).padStart(3,'0')}`;
+
+                // Extract data from conversation
+                const chiefComplaint = conversation.length > 0 ? conversation[0].answer.substring(0, 50) + "..." : "Not specified";
+                const symptoms = conversation.map(c => c.answer).join(', ').substring(0, 100) + "...";
+
+                // Format data intelligently from conversation
+                const chiefComplaint = conversation.length > 0 ? conversation[0].answer.substring(0, 50) + "..." : "Not specified";
+                const duration = conversation.length > 1 ? conversation[1].answer.substring(0, 15) : "Not specified";
+                const severity = "Not rated";
+                const frequency = "Not specified";
+                const symptoms = conversation.map(c => c.answer).join(', ').substring(0, 50) + "...";
+                const medicalHistory = "No significant history";
+                const medications = "None reported";
+                const allergies = "None known";
+
+                // AI Assessment based on conversation
+                const possibleCondition = conversation.length > 2 ? "Common condition based on symptoms" : "Preliminary assessment pending";
+                const confidenceLevel = conversation.length >= 3 ? "75" : "60";
+                const riskLevel = "⚪ Low  ● Moderate  ⚪ High";
+                const emergencyAlert = "● None  ⚪ Monitor Closely  ⚪ SEEK IMMEDIATE CARE";
+
+                const reportContent = `🩺 AROGYA AI - EARLY DIAGNOSTIC REPORT
+
+👤 Name: ${userInfo.name}    📍 Location: ${userInfo.city}
+📆 Date: ${dateStr}    🕒 Time: ${timeStr}    🔢 Health ID: ${healthId}
+
+📋 COLLECTED SYMPTOMS
+• Chief Complaint: ${chiefComplaint}
+• Duration: ${duration}    • Severity (1-10): ${severity}    • Frequency: ${frequency}
+• Associated Symptoms: ${symptoms}
+• Medical History: ${medicalHistory}
+• Current Medications: ${medications}
+• Allergies: ${allergies}
+
+🤖 AI PRELIMINARY ASSESSMENT
+Possible Condition: ${possibleCondition}
+AI Confidence Level: ${confidenceLevel}%    Risk Level: ${riskLevel}
+Emergency Alert: ${emergencyAlert}
+
+🌿 दादी माँ के नुस्खे (TRADITIONAL REMEDIES)
+1. Recommended Remedy: Warm water with honey and ginger
+   Usage Instructions: Take twice daily, morning and evening
+2. Alternative Remedy: Turmeric milk before bedtime
+   Usage Instructions: Mix 1 tsp turmeric in warm milk
+
+👨‍⚕️ DOCTOR ANALYSIS & DIAGNOSIS
+Doctor Name: _________________________    License No: ____________________
+
+Clinical Diagnosis: _____________________________________________________
+
+Prescribed Medications:
+_______________________________________________________________________
+_______________________________________________________________________
+_______________________________________________________________________
+_______________________________________________________________________
+_______________________________________________________________________
+_______________________________________________________________________
+_______________________________________________________________________
+_______________________________________________________________________
+_______________________________________________________________________
+
+-----------------------------------------------------_____________________________________________________________________________________
+
+Additional Instructions/Follow-up:
+_______________________________________________________________________
+_______________________________________________________________________
+Doctor Signature: _________________________    Date: _______________
+
+Generated by Arogya AI v2.0 - For informational purposes only`;
+
+                // Create and download text file
+                const blob = new Blob([reportContent], { type: 'text/plain; charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Arogya_AI_Report_${healthId}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                document.getElementById('status').textContent = 'Report downloaded successfully!';
+            } catch (error) {
+                console.error('Error generating report:', error);
+                document.getElementById('status').textContent = 'Error generating report. Please try again.';
+            }
+        }
+
+        // Initialize
+        document.getElementById('status').textContent = 'Simple version loaded successfully!';
+    </script>
+</body>
+</html>

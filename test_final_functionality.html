@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arogya AI - Final Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #3367d6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #4285f4;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Arogya AI - Final Functionality Test</h1>
+        <p>This page will test all the functionality of your Arogya AI application to ensure everything is working correctly.</p>
+        
+        <div class="test-section">
+            <h2>📋 Test Results</h2>
+            <div id="test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🚀 Quick Tests</h2>
+            <button onclick="testBasicFunctionality()">Test Basic Functionality</button>
+            <button onclick="testAPIEndpoints()">Test API Endpoints</button>
+            <button onclick="testFileLoading()">Test File Loading</button>
+            <button onclick="runAllTests()">Run All Tests</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>🌐 Application Access</h2>
+            <p>Main Application: <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></p>
+            <button onclick="openApplication()">Open Application</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>📝 Manual Test Checklist</h2>
+            <div id="manual-checklist">
+                <label><input type="checkbox"> Language selection modal appears</label><br>
+                <label><input type="checkbox"> Chat conversation works in selected language</label><br>
+                <label><input type="checkbox"> Emergency keyword detection works</label><br>
+                <label><input type="checkbox"> PDF generation works without errors</label><br>
+                <label><input type="checkbox"> No JavaScript console errors</label><br>
+                <label><input type="checkbox"> Multi-language switching works</label><br>
+                <label><input type="checkbox"> Professional PDF format generated</label><br>
+                <label><input type="checkbox"> Text download fallback works</label><br>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function addTestResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
+            resultsDiv.appendChild(resultDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function testBasicFunctionality() {
+            addTestResult('🧪 Starting basic functionality tests...', 'info');
+            
+            // Test if main page is accessible
+            fetch('http://localhost:3000')
+                .then(response => {
+                    if (response.ok) {
+                        addTestResult('✅ Main page accessible (Status: ' + response.status + ')', 'success');
+                        return response.text();
+                    } else {
+                        throw new Error('Main page not accessible');
+                    }
+                })
+                .then(html => {
+                    if (html.includes('Arogya AI')) {
+                        addTestResult('✅ Main page contains Arogya AI content', 'success');
+                    } else {
+                        addTestResult('❌ Main page missing Arogya AI content', 'error');
+                    }
+                })
+                .catch(error => {
+                    addTestResult('❌ Basic functionality test failed: ' + error.message, 'error');
+                });
+        }
+
+        function testAPIEndpoints() {
+            addTestResult('🔌 Testing API endpoints...', 'info');
+            
+            // Test health endpoint
+            fetch('http://localhost:3000/api/health')
+                .then(response => {
+                    if (response.ok) {
+                        addTestResult('✅ Health API endpoint working', 'success');
+                        return response.json();
+                    } else {
+                        throw new Error('Health API failed');
+                    }
+                })
+                .then(data => {
+                    if (data.status === 'healthy') {
+                        addTestResult('✅ Health API returns healthy status', 'success');
+                    }
+                })
+                .catch(error => {
+                    addTestResult('❌ Health API test failed: ' + error.message, 'error');
+                });
+
+            // Test keys endpoint
+            fetch('http://localhost:3000/api/keys')
+                .then(response => {
+                    if (response.ok) {
+                        addTestResult('✅ Keys API endpoint accessible', 'success');
+                    } else {
+                        addTestResult('❌ Keys API endpoint failed', 'error');
+                    }
+                })
+                .catch(error => {
+                    addTestResult('❌ Keys API test failed: ' + error.message, 'error');
+                });
+        }
+
+        function testFileLoading() {
+            addTestResult('📁 Testing static file loading...', 'info');
+            
+            // Test JavaScript file
+            fetch('http://localhost:3000/script.js')
+                .then(response => {
+                    if (response.ok) {
+                        addTestResult('✅ script.js loads successfully', 'success');
+                        return response.text();
+                    } else {
+                        throw new Error('script.js failed to load');
+                    }
+                })
+                .then(jsContent => {
+                    if (jsContent.includes('DOMContentLoaded')) {
+                        addTestResult('✅ script.js contains expected content', 'success');
+                    }
+                })
+                .catch(error => {
+                    addTestResult('❌ JavaScript file test failed: ' + error.message, 'error');
+                });
+
+            // Test CSS file
+            fetch('http://localhost:3000/styles.css')
+                .then(response => {
+                    if (response.ok) {
+                        addTestResult('✅ styles.css loads successfully', 'success');
+                    } else {
+                        addTestResult('❌ styles.css failed to load', 'error');
+                    }
+                })
+                .catch(error => {
+                    addTestResult('❌ CSS file test failed: ' + error.message, 'error');
+                });
+        }
+
+        function runAllTests() {
+            addTestResult('🚀 Running comprehensive test suite...', 'info');
+            
+            // Clear previous results
+            document.getElementById('test-results').innerHTML = '';
+            
+            // Run all tests with delays
+            setTimeout(() => testBasicFunctionality(), 100);
+            setTimeout(() => testAPIEndpoints(), 500);
+            setTimeout(() => testFileLoading(), 1000);
+            
+            setTimeout(() => {
+                addTestResult('🎉 All automated tests completed! Check results above.', 'success');
+                addTestResult('📝 Please complete the manual checklist for full verification.', 'info');
+            }, 2000);
+        }
+
+        function openApplication() {
+            window.open('http://localhost:3000', '_blank');
+            addTestResult('🌐 Application opened in new tab', 'info');
+        }
+
+        // Auto-run basic test on page load
+        window.addEventListener('load', () => {
+            addTestResult('🔧 Test page loaded successfully', 'success');
+            addTestResult('ℹ️ Click "Run All Tests" to verify all functionality', 'info');
+        });
+    </script>
+</body>
+</html>
