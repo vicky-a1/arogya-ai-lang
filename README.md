@@ -6,6 +6,11 @@ Arogya AI is a compassionate, culturally-aware AI medical assistant designed for
 
 ## 🌟 Features
 
+### Memory Optimization
+- **Efficient Resource Usage**: Optimized for low memory environments (512MB)
+- **Multi-stage Docker Build**: Minimized image size and build memory usage
+- **Production-ready Settings**: Configured for optimal performance on cloud platforms
+
 ### Core Functionality
 - **Multi-AI Provider Support**: Robust fallback system with Groq, Perplexity, and Gemini APIs
 - **Multiple Groq Models**: Automatic fallback through 5 different Groq models for maximum reliability
@@ -178,3 +183,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Centers for Disease Control and Prevention (CDC)
 - Indian Council of Medical Research (ICMR)
 - Ministry of Health and Family Welfare (MoHFW), Government of India
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4fa1b31211966beafdecb0d85ceb50023fcf9d73
