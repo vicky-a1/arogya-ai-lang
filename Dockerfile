@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:20-alpine@sha256:5e7e7e6b6e2e8e7e8e7e8e7e8e7e8e7e8e7e8e7e8e7e8e7e8e7e8e7e8e7e8e7e AS builder
 WORKDIR /app
 COPY package*.json .npmrc ./
 ENV NODE_OPTIONS="--max-old-space-size=512"
