@@ -1,12 +1,12 @@
 # Build stage
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json .npmrc ./
 ENV NODE_OPTIONS="--max-old-space-size=512"
 RUN npm ci --only=production --no-optional --no-audit
 
 # Production stage
-FROM node:18-alpine
+FROM node:20-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=builder /app/node_modules ./node_modules
@@ -20,7 +20,6 @@ RUN addgroup -g 1001 -S nodejs && \
     chown -R arogya:nodejs /app
 USER arogya
 
-# Runtime config
 ENV PORT=3000
 EXPOSE 3000
 CMD ["node", "--max-old-space-size=512", "server.js"]
